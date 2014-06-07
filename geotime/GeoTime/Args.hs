@@ -59,7 +59,7 @@ parse' a ["-l", s] = setTask a (taskLocate s)
 parse' a s = setTask a . taskLocalTime . unwords $ s
 
 printUsage h = hPutStrLn h . (++ us) =<< getProgName
-  where us = " [-h|--help] [-k key] {[-z] lat lon | [-l] location}"
+  where us = " [-h|--help] [-o logdir] [-k key] {[-z] lat lon | [-l] location}"
 
 argError = do
   hPutStrLn stderr "Invalid argument(s)."
