@@ -230,7 +230,7 @@ setUserNick h name = do
   send h $ user name "0" "*" "execBot"
 
 sendPong :: Handle -> [ByteString] -> IO ()
-sendPong h = send h . pong . head
+sendPong h = B8.hPutStr h . (`B8.append` "\r\n") . encode . pong . head
 
 sendPrivMsg :: Handle -> Channel -> ByteString -> IO ()
 sendPrivMsg h = send h .+ privmsg

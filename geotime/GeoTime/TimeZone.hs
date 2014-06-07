@@ -38,13 +38,6 @@ data GTimeZone = GTimeZone {
   }
   deriving Show
 
-toTimeZone :: GTimeZone -> TimeZone
-toTimeZone gtz = TimeZone (fromInteger minOfs) dst name
-  where
-    minOfs = (dstOffset gtz + rawOffset gtz) `div` 60
-    dst = dstOffset gtz /= 0
-    name = map head . words . gTimeZoneName $ gtz
-
 assocToTZ :: [(String,JSValue)] -> Maybe GTimeZone
 assocToTZ assoc = do
   [ JSRational _ dstR    ,

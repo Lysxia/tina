@@ -4,6 +4,7 @@ import GeoTime.GoogleApi
 import GeoTime.Geocode
 import GeoTime.TimeZone
 import GeoTime.Logging
+import GeoTime.Time
 
 import Control.Monad.Trans
 import Control.Monad.Trans.Maybe

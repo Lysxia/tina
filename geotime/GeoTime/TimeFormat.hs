@@ -8,13 +8,13 @@ weekDay :: Day -> Int
 weekDay day = let (_,_,d) = toWeekDate day in d
 
 dayOfWeek :: Int -> String
-dayOfWeek 0 = "Di"
 dayOfWeek 1 = "Lu"
 dayOfWeek 2 = "Ma"
 dayOfWeek 3 = "Me"
 dayOfWeek 4 = "Je"
 dayOfWeek 5 = "Ve"
 dayOfWeek 6 = "Sa"
+dayOfWeek 7 = "Di"
 
 someFormat = "%d/%m/%y %T %Z (TUC%z)"
 

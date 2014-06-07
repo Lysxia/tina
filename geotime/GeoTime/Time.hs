@@ -5,8 +5,8 @@ import GeoTime.TimeZone ( GTimeZone (..) )
 import Data.Time
 import Data.Time.Clock.POSIX
 
-getTimeZone :: GTimeZone -> TimeZone
-getTimeZone gtz
+toTimeZone :: GTimeZone -> TimeZone
+toTimeZone gtz
   = TimeZone {
       timeZoneMinutes    = ofs `div` 60,
       timeZoneSummerOnly = dstOffset gtz /= 0,
