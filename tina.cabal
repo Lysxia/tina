@@ -19,7 +19,7 @@ executable geotime
   main-is:             Main.hs
   -- other-modules:       
   other-extensions:    OverloadedStrings
-  build-depends:       base >=4.5, network >=2.5 && <2.6, irc >=0.6 && <0.7, process >=1.1 && <1.2, posix-escape >=0.1 && <0.2, bytestring >=0.10 && <0.11, utf8-string >=0.3 && <0.4, mtl >=2.1 && <2.2, transformers >=0.3 && <0.4, filepath >=1.3 && <1.4, directory >=1.2 && <1.3, HTTP >=4000.2 && <4000.3, json >=0.7 && <0.8, time >=1.4 && <1.5, old-locale >=1.0 && <1.1, http-conduit >=2.1 && <2.2
+  build-depends:       base, network, posix-escape, bytestring, utf8-string, mtl, transformers, filepath, directory, HTTP, json, time, old-locale, http-conduit
   hs-source-dirs:      geotime
   default-language:    Haskell2010
 
@@ -27,6 +27,6 @@ executable execbot
   main-is:             Main.hs
   -- other-modules:       
   other-extensions:    OverloadedStrings
-  build-depends:       base >=4.5, network >=2.5 && <2.6, irc >=0.6 && <0.7, process >=1.1 && <1.2, posix-escape >=0.1 && <0.2, bytestring >=0.10 && <0.11, utf8-string >=0.3 && <0.4, mtl >=2.1 && <2.2, transformers >=0.3 && <0.4, filepath >=1.3 && <1.4, directory >=1.2 && <1.3, HTTP >=4000.2 && <4000.3, json >=0.7 && <0.8, time >=1.4 && <1.5, old-locale >=1.0 && <1.1, http-conduit >=2.1 && <2.2
+  build-depends:       base, network, irc, process, posix-escape, bytestring, utf8-string, mtl, transformers, filepath, directory, HTTP
   hs-source-dirs:      execbot
   default-language:    Haskell2010
