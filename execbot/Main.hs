@@ -142,16 +142,21 @@ ifNull :: b -> ([a] -> b) -> [a] -> b
 ifNull b f [] = b
 ifNull _ f as = f as
 
+(maxLines, maxChars) = (3, 140) :: (Int, Int)
+
 -- Continuation passing style
 executeThen :: FilePath -> String -> (String -> IO ()) -> IO ()
-executeThen exec msg continue = do
+executeThen exec msg send' = do
   (_, Just hOut, _, ph) <- createProcess process
   status <- waitForProcess ph
   case status of
-    ExitSuccess -> hGetLine' hOut >>= continue 
+    ExitSuccess -> getContents hOut >>= sendLines >> hClose hOut
     ExitFailure i -> hPutStrLn stderr (failMsg i)
   where
-    hGetLine' h = catchIOError (hGetLine h) catchEOF
+    getContents h = trunc <$> catchIOError (hGetContents h) catchEOF
+    -- Hard-coded bound: max 140 char, 3 non-empty lines
+    trunc = take maxLines . filter (not . null) . lines . take maxChars
+    sendLines = mapM_ send'
     catchEOF e | isEOFError e = return ""
                | otherwise = ioError e
     process = (shell cmd) { std_out = CreatePipe }
