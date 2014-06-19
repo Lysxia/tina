@@ -6,6 +6,7 @@ import GeoTime.TimeZone
 import GeoTime.Logging
 import GeoTime.Time
 
+import Control.Applicative
 import Control.Monad.Trans
 import Control.Monad.Trans.Maybe
 import Control.Monad.Trans.Writer.Lazy
@@ -47,7 +48,7 @@ timeZone :: Maybe FilePath -> Maybe Key
 timeZone logDir k lat lon = do
   (ans, s) <- lift . runWriterT $ query
   logReply s
-  MaybeT . return . fmap toTimeZone $ ans
+  MaybeT . return $ toTimeZone <$> ans
   where
     query = askTimeZone k lat lon =<< timestamp
     timestamp = lift $ secSinceEPOCH

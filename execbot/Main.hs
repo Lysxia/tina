@@ -3,7 +3,7 @@ module Main where
 
 {- Talking to this IRC bot runs a shell command with the given string as an
  - argument.
- - 
+ -
  - >$ ./ExecBot {nick} {owner} {passwd} {server} {port} {cmd} {chan}*
  -
  - connects ExecBot to {server}:{port}, and channels {chan}*,
@@ -50,6 +50,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.UTF8 as BU
 
+import Control.Applicative
 import Control.Monad
 import Control.Monad.Trans
 import Control.Monad.Trans.State.Lazy
