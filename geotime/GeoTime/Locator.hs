@@ -29,17 +29,23 @@ maybeParsePosition s = mb
 
 spaceOrComma x = x == ' ' || x == ','
 
--- | First directly try to parse a latitude-longitude pair,
--- if it fails, submit the string to Google Geocode.
-locate :: Maybe FilePath -> Maybe Key -> String -> MaybeT IO (Double, Double)
-locate logDir k req = maybe (MaybeT query) return . maybeParsePosition $ req
+-- | First directly try to parse a latitude-longitude pair.
+-- If it fails, submit the string to Google Geocode,
+-- and return the position and address of a result, if any.
+-- Fail otherwise.
+locate
+  :: Maybe FilePath -> Maybe Key -> String
+  -> MaybeT IO (Maybe String, Position)
+locate logDir k req
+  = maybe (MaybeT query) (return . (,) Nothing)
+  . maybeParsePosition $ req
   where
     query = do
       (ans, s) <- runWriterT $ askGeocode k req
       logReply s
-      return $ resultLocation `fmap` safeHead ans
-    safeHead [] = Nothing
-    safeHead (x : _) = Just x
+      return $ getAnswer ans
+    getAnswer [] = Nothing
+    getAnswer (x : _) = Just (Just (formatted_address x), resultLocation x)
     logReply = maybeLogToFile logDir req
 
 -- | Request current time zone from Google Time Zone.

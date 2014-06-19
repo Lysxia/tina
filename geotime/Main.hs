@@ -24,12 +24,14 @@ doTask (Arguments (Options k logD) task)
   = case task of
       Loc s -> runMaybeT (locate' s) >>= print
       TZ lat lon -> runMaybeT (timeZone' lat lon) >>= print
-      LoTi s -> (>> return ()) . runMaybeT $
-              locate' s
-          >>= uncurry timeZone'
-          >>= lift . getCurrentZonedTime
-          >>= lift . putStrLn . fullTimeString
+      LoTi s -> (>> return ()) . runMaybeT $ do
+              (addr, pos) <- locate' s
+              uncurry timeZone' pos
+                >>= lift . getCurrentZonedTime
+                >>= lift . putStrLn . maybeAppend addr . fullTimeString
    where
+     maybeAppend Nothing = id
+     maybeAppend (Just a) = (++ " @ " ++ a)
      locate' = locate logD k
      timeZone' = timeZone logD k
 
