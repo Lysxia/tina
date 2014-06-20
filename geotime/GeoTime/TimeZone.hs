@@ -13,11 +13,13 @@ import Data.List ( intercalate )
 import Data.Time
 import Data.Time.Clock.POSIX
 import Text.JSON
+import Text.Printf
 
 googleTimeZone = "https://maps.googleapis.com/maps/api/timezone/"
 
 location :: Double -> Double -> Parameter
-location lat lng = ("location", show lat ++ "," ++ show lng)
+location lat lng = ("location", pf lat ++ "," ++ pf lng)
+  where pf = printf "%-2.4f" -- Just enough
 
 type ByteString = BU.ByteString
 type WriterS = WriterT String
