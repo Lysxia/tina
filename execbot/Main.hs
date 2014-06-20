@@ -133,15 +133,17 @@ recvPrivMsg h t@(Message pre _ params) = get >>= process
 
 processRequest :: FilePath -> Handle -> Channel -> ByteString -> IO ()
 processRequest exec h chan msg
-  = executeThen exec (BU.toString msg) (ifNull logEmpty sendMsg)
+  = executeThen exec (BU.toString msg) (ifNull logEmpty sendMsg . sanitize)
   where
     logEmpty = putStrLn "<Empty>"
-    sendMsg = sendPrivMsg h chan . BU.fromString
+    sendMsg = mapM_ (sendPrivMsg h chan . BU.fromString)
+    sanitize = take maxLines . filter (not . null) . lines . take maxChars
 
 ifNull :: b -> ([a] -> b) -> [a] -> b
 ifNull b f [] = b
 ifNull _ f as = f as
 
+-- Hard-coded bound: max 140 char, 3 non-empty lines
 (maxLines, maxChars) = (3, 140) :: (Int, Int)
 
 -- Continuation passing style
@@ -150,13 +152,10 @@ executeThen exec msg send' = do
   (_, Just hOut, _, ph) <- createProcess process
   status <- waitForProcess ph
   case status of
-    ExitSuccess -> getContents hOut >>= sendLines >> hClose hOut
+    ExitSuccess -> getContents hOut >>= send' >> hClose hOut
     ExitFailure i -> hPutStrLn stderr (failMsg i)
   where
-    getContents h = trunc <$> catchIOError (hGetContents h) catchEOF
-    -- Hard-coded bound: max 140 char, 3 non-empty lines
-    trunc = take maxLines . filter (not . null) . lines . take maxChars
-    sendLines = mapM_ send'
+    getContents h = catchIOError (hGetContents h) catchEOF
     catchEOF e | isEOFError e = return ""
                | otherwise = ioError e
     process = (shell cmd) { std_out = CreatePipe }
