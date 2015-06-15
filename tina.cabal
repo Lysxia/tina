@@ -18,7 +18,9 @@ cabal-version:       >=1.10
 library
   exposed-modules:     IRC
   hs-source-dirs:      .
-  build-depends:       base, network, irc, bytestring, transformers, monad-loops, irc-ctcp, text
+  build-depends:
+    base, bytestring, transformers, monad-loops, text,
+    network, irc, irc-ctcp
   default-language:    Haskell2010
 
 executable geotime
@@ -33,13 +35,21 @@ executable execbot
   main-is:             Main.hs
   -- other-modules:       
   other-extensions:    OverloadedStrings
-  build-depends:       base, network, irc, process, posix-escape, bytestring, utf8-string, mtl, transformers, filepath, directory, HTTP
+  build-depends:
+    base, bytestring, filepath, directory, mtl, transformers,
+    utf8-string, posix-escape, process,
+    network, HTTP, irc
   hs-source-dirs:      execbot
   default-language:    Haskell2010
 
 executable glace
   main-is:             Main.hs
   hs-source-dirs:      glace
-  build-depends:       base, network, irc, bytestring, unbounded-delays, optparse-applicative, tina, transformers, text
+  build-depends:
+    base, bytestring, text, random, transformers, 
+    unbounded-delays, 
+    network, irc,
+    optparse-applicative,
+    tina
   default-language:    Haskell2010
 

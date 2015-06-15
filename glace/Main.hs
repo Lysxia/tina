@@ -10,6 +10,7 @@ import Control.Monad.IO.Class
 import Control.Concurrent.Thread.Delay
 import Options.Applicative hiding (action)
 import System.IO
+import System.Random
 
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text as Text
@@ -45,9 +46,11 @@ main =
             -> void . liftIO $ putGlasson gla
           _ -> return ()
 
--- Delay in microseconds
+-- Wait for a glasson to melt a bit
 delay' :: MonadIO m => m ()
-delay' = liftIO $ delay $ 60 * 10^6
+delay' = liftIO $ do
+  secs <- randomRIO (30, 90)
+  delay $ secs * 10^6 -- in microseconds
 
 -- Icebox
 type Glassons = MVar ()
