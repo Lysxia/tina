@@ -1,8 +1,10 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module IRC
   ( IRC
+  , mapIRC
   , runIRC
   , Server(..)
+  , Message(..)
   , connect
   , setUserNick
   , waitWelcome
@@ -38,14 +40,17 @@ import Data.Maybe
 import Data.Char
 import Data.Text.Encoding (decodeLatin1)
 
+mapIRC :: (IO a -> IO b) -> IRC a -> IRC b
+mapIRC = mapReaderT
+
 mkMessage           :: ByteString -> [Parameter] -> Message
 mkMessage cmd params = Message Nothing cmd params
 
-{- Debug flag -}
-debug :: Bool
-debug = True
-
-logB8 = when debug . B8.putStrLn
+logB8 :: ByteString -> IRC ByteString
+logB8 s = do
+  log <- ircLog <$> ask
+  when log $ liftIO $ B8.putStrLn s
+  return s
 
 type ByteString = BS.ByteString
 
@@ -53,28 +58,39 @@ sender :: Message -> Maybe ByteString
 sender (Message (Just (NickName s _ _)) _ _) = Just s
 sender _ = Nothing
 
-type IRC = ReaderT Handle IO
+data Session = Session
+  { ircHandle :: Handle
+  , ircLog :: Bool
+  }
+
+ircHandle' = ircHandle <$> ask
+
+type IRC = ReaderT Session IO
 
 getLineIRC :: IRC ByteString
-getLineIRC = liftIO . BS.hGetLine =<< ask
+getLineIRC = do
+  h <- ircHandle'
+  s <- liftIO $ BS.hGetLine h
+  logB8 s
 
 putStrIRC :: ByteString -> IRC ()
-putStrIRC s =
-  ask >>= \h -> liftIO $ BS.hPutStr h (B8.append s "\r\n")
+putStrIRC s = do
+  logB8 $ B8.cons '>' s
+  h <- ircHandle'
+  liftIO $ BS.hPutStr h (B8.append s "\r\n")
 
 -- | Handles pings
-listen :: IRC (Maybe Message)
+listen :: IRC Message
 listen =
  do s <- getLineIRC
-    liftIO $ logB8 s
     case decode s of
       Just (Message _ "PING" params) -> sendPong params >> listen
-      m -> return m
+      Nothing -> listen
+      Just m -> return m
 
 send :: Message -> IRC ()
 send msg =
  do let emsg = encode msg
-    liftIO $ logB8 $ B8.cons '>' emsg
     putStrIRC emsg
 
 connectToChan :: ByteString -> IRC ()
@@ -88,7 +104,7 @@ setUserNick nickname username realname = do
 waitWelcome :: IRC ()
 waitWelcome = void $ iterateUntil welcome listen
   where
-    welcome (Just (Message _ "001" _)) = True
+    welcome (Message _ "001" _) = True
     welcome _ = False
 
 sendPong :: [ByteString] -> IRC ()
@@ -110,10 +126,10 @@ connect (IRC.Server host port) =
     hSetBuffering h NoBuffering
     return h
 
-runIRC :: Server -> IRC a -> IO a
-runIRC server irc =
+runIRC :: Server -> Bool -> IRC a -> IO a
+runIRC server v irc =
  do h <- connect server
-    a <- runReaderT irc h
+    a <- runReaderT irc (Session h v)
     hClose h
     return a
 

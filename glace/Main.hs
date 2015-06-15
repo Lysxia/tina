@@ -3,12 +3,17 @@ module Main where
 
 import IRC
 import Network
+import Control.Concurrent
+import Control.Concurrent.MVar
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Concurrent.Thread.Delay
 import Options.Applicative hiding (action)
 import System.IO
+
 import qualified Data.ByteString.Char8 as B8
+import qualified Data.Text as Text
+import Data.Text.Encoding
 
 data Options = Options
   { host :: String
@@ -22,19 +27,57 @@ parseOptions = Options
 
 main =
  do Options{..} <- execParser $ info (helper <*> parseOptions) briefDesc
-    runIRC (Server host port) $ do
-      let c = B8.pack chan
-      setUserNick "Le_glasson" "H2O" "Monoxyde de dihydrogène"
+    let server = Server host port
+        c = B8.pack chan
+    gla <- glassonBox
+    forkIO $ glasson gla server c
+    runIRC server True $ do
+      setUserNick "Glassiere" "distributeur" "Machine à glaçons"
       waitWelcome
       connectToChan c
-      liftIO $ delay $ 1 * 10^6
+      forever $ do
+        msg <- listen
+        case msg of
+          Message _ "PRIVMSG" [target, txt]
+            | let txt' = decodeUtf8 txt,
+              target == c && "Glassiere" `Text.isPrefixOf` txt'
+                          && "glaçon" `Text.isInfixOf` txt'
+            -> void . liftIO $ putGlasson gla
+          _ -> return ()
+
+-- Delay in microseconds
+delay' :: MonadIO m => m ()
+delay' = liftIO $ delay $ 60 * 10^6
+
+-- Icebox
+type Glassons = MVar ()
+
+-- Create an icebox
+glassonBox :: IO Glassons
+glassonBox = newEmptyMVar
+
+takeGlasson :: MonadIO m => Glassons -> m ()
+takeGlasson = liftIO . takeMVar
+
+putGlasson :: MonadIO m => Glassons -> m ()
+putGlasson gla = void . liftIO $ tryPutMVar gla ()
+
+-- Take glassons out of the icebox and let them melt.
+glasson :: Glassons -> Server -> B8.ByteString -> IO ()
+glasson gla server c =
+  runIRC server False $ do
+    mapIRC forkIO $ forever listen -- Discard any input
+    setUserNick "Le_glasson" "H2O" "Monoxyde de dihydrogène"
+    waitWelcome
+    forever $ do
+      takeGlasson gla
+      send $ nick "Le_glasson"
+      connectToChan c
+      delay'
       send $ action c "rafraîchit la salle."
-      liftIO $ delay $ 1 * 10^6
+      delay'
       send $ nick "Le_petit_glasson"
-      liftIO $ delay $ 1 * 10^6
-      send $ action c "fond."
-      send $ nick "L_eau_coolante"
+      delay'
+      send $ action c "a fondu."
       send $ part c
-      send $ quit Nothing
-      liftIO $ delay $ 10^5
 

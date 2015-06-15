@@ -40,6 +40,6 @@ executable execbot
 executable glace
   main-is:             Main.hs
   hs-source-dirs:      glace
-  build-depends:       base, network, irc, bytestring, unbounded-delays, optparse-applicative, tina, transformers
+  build-depends:       base, network, irc, bytestring, unbounded-delays, optparse-applicative, tina, transformers, text
   default-language:    Haskell2010
 
