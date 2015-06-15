@@ -31,7 +31,7 @@ main =
         c = B8.pack chan
     gla <- glassonBox
     forkIO $ glasson gla server c
-    runIRC server True $ do
+    runIRC server $ do
       setUserNick "Glassiere" "distributeur" "Machine à glaçons"
       waitWelcome
       connectToChan c
@@ -65,10 +65,10 @@ putGlasson gla = void . liftIO $ tryPutMVar gla ()
 -- Take glassons out of the icebox and let them melt.
 glasson :: Glassons -> Server -> B8.ByteString -> IO ()
 glasson gla server c =
-  runIRC server False $ do
-    mapIRC forkIO $ forever listen -- Discard any input
+  runIRC server $ do
     setUserNick "Le_glasson" "H2O" "Monoxyde de dihydrogène"
     waitWelcome
+    mapIRC forkIO $ forever listen -- Discard any input
     forever $ do
       takeGlasson gla
       send $ nick "Le_glasson"

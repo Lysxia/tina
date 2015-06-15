@@ -1,22 +1,15 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module IRC
-  ( IRC
-  , mapIRC
-  , runIRC
+  ( IRC, mapIRC, runIRC, runIRC'
   , Server(..)
   , Message(..)
+  , sender
   , connect
   , setUserNick
   , waitWelcome
   , connectToChan
-  , listen
-  , send
-  , nick
-  , part
-  , quit
-  , action
-  , privmsg
-  , sender
+  , listen, send
+  , nick, part, quit, action, privmsg
   ) where
 
 import Network
@@ -126,10 +119,13 @@ connect (IRC.Server host port) =
     hSetBuffering h NoBuffering
     return h
 
-runIRC :: Server -> Bool -> IRC a -> IO a
-runIRC server v irc =
+runIRC :: Server -> IRC a -> IO a
+runIRC = runIRC' False
+
+runIRC' :: Bool -> Server -> IRC a -> IO a
+runIRC' log server irc =
  do h <- connect server
-    a <- runReaderT irc (Session h v)
+    a <- runReaderT irc (Session h log)
     hClose h
     return a
 
