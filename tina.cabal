@@ -15,6 +15,12 @@ build-type:          Simple
 -- extra-source-files:  
 cabal-version:       >=1.10
 
+library
+  exposed-modules:     IRC
+  hs-source-dirs:      .
+  build-depends:       base, network, irc, bytestring, transformers, monad-loops, irc-ctcp, text
+  default-language:    Haskell2010
+
 executable geotime
   main-is:             Main.hs
   -- other-modules:       
@@ -30,3 +36,10 @@ executable execbot
   build-depends:       base, network, irc, process, posix-escape, bytestring, utf8-string, mtl, transformers, filepath, directory, HTTP
   hs-source-dirs:      execbot
   default-language:    Haskell2010
+
+executable glace
+  main-is:             Main.hs
+  hs-source-dirs:      glace
+  build-depends:       base, network, irc, bytestring, unbounded-delays, optparse-applicative, tina, transformers
+  default-language:    Haskell2010
+
