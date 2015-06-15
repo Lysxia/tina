@@ -50,7 +50,7 @@ main =
 delay' :: MonadIO m => m ()
 delay' = liftIO $ do
   secs <- randomRIO (30, 90)
-  delay $ secs * 10^6 -- in microseconds
+  delay $ secs * 10^5 -- in microseconds
 
 -- Icebox
 type Glassons = MVar ()
@@ -60,10 +60,13 @@ glassonBox :: IO Glassons
 glassonBox = newEmptyMVar
 
 takeGlasson :: MonadIO m => Glassons -> m ()
-takeGlasson = liftIO . takeMVar
+takeGlasson = liftIO . flip swapMVar ()
 
 putGlasson :: MonadIO m => Glassons -> m ()
 putGlasson gla = void . liftIO $ tryPutMVar gla ()
+
+glassonTaken :: MonadIO m => Glassons -> m ()
+glassonTaken = liftIO . takeMVar
 
 -- Take glassons out of the icebox and let them melt.
 glasson :: Glassons -> Server -> B8.ByteString -> IO ()
@@ -83,4 +86,5 @@ glasson gla server c =
       delay'
       send $ action c "a fondu."
       send $ part c
+      glassonTaken gla
 
