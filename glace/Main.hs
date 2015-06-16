@@ -50,7 +50,7 @@ main =
 delay' :: MonadIO m => m ()
 delay' = liftIO $ do
   secs <- randomRIO (30, 90)
-  delay $ secs * 10^5 -- in microseconds
+  delay $ secs * 10^6 -- in microseconds
 
 -- Icebox
 type Glassons = MVar ()
